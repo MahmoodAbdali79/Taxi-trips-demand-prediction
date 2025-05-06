@@ -21,12 +21,12 @@ jobs:
 
       - name: Validate Secrets
         run: |
-          if [ -z "${{ secrets.DOCKERHUB_USERNAME }}" ]; then
-            echo "Error: DOCKERHUB_USERNAME is not set"
-            exit 1
-          fi
           if [ -z "${{ secrets.DOCKERHUB_TOKEN }}" ]; then
             echo "Error: DOCKERHUB_TOKEN is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.DOCKERHUB_USERNAME }}" ]; then
+            echo "Error: DOCKERHUB_USERNAME is not set"
             exit 1
           fi
 
