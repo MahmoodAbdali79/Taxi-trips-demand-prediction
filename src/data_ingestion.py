@@ -1,7 +1,7 @@
 import random
 import sys
 from pathlib import Path
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 
 from src.logger import get_logger
 
@@ -24,8 +24,9 @@ class DataIngestion:
         self.raw_dir.mkdir(parents=True, exist_ok=True)
 
     def download_raw_data(self):
-        with urlopen(self.url) as respons:
-            raw_data = respons.read().decode("utf-8")
+        req = Request(self.url, headers={"User-Agent": "Mozilla/5.0"})
+        with urlopen(req) as response:
+            raw_data = response.read().decode("utf-8")
             return raw_data
 
     def split_data(self, raw_data):
