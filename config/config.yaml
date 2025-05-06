@@ -2,9 +2,12 @@ data_ingestion:
   bucket_name : "tap40"
   object_name : "data.txt"
   storage_path : "s3.ir-thr-at1.arvanstorage.ir"
-  extra_part: "X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=254f0b27-805a-4da4-af26-d746c6a3a15e%2F20250428%2Fir-thr-at1%2Fs3%2Faws4_request&X-Amz-Date=20250428T191037Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&versionId=&X-Amz-Signature=289c93714cc6aa9b6c958099bf717878f12ade9d88ccabd04a4a1017c488d2e4"
+  extra_part: "X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=254f0b27-805a-4da4-af26-d746c6a3a15e%2F20250506%2Fir-thr-at1%2Fs3%2Faws4_request&X-Amz-Date=20250506T221359Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&versionId=&X-Amz-Signature=542df14272fdc777ce75a5efa1de5f188abd2e3d43facea6ac730c73a29930e5"
   train_ratio : 0.9
   artfact_dir: artifacts
+
+
+
 
 data_processing:
   shift: 18
