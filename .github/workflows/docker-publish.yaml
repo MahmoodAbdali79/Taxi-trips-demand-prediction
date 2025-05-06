@@ -18,8 +18,8 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-actions@v3
         with:
-          username: {{ secrets.DOCKERHUB_USERNAME}}
-          password: {{ secrets.DOCKERHUB_TOKER}}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKER }}
 
       - name: Extract version from release
         id: vars
