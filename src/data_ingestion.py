@@ -1,5 +1,6 @@
 import random
 import sys
+import time
 from pathlib import Path
 from urllib.request import Request, urlopen
 
@@ -25,9 +26,23 @@ class DataIngestion:
 
     def download_raw_data(self):
         req = Request(self.url, headers={"User-Agent": "Mozilla/5.0"})
-        with urlopen(req) as response:
-            raw_data = response.read().decode("utf-8")
-            return raw_data
+        retries = 3
+        delay = 5
+
+        for attempt in range(retries):
+            try:
+                logger.info(f"Attempt {attempt + 1} to connect to {self.url}")
+                response = urlopen(req, timeout=100)
+                raw_data = response.read().decode("utf-8")
+                logger.info("Connection successful!")
+                return raw_data
+            except Exception as e:
+                logger.error(f"Error: {e}")
+                if attempt < retries - 1:
+                    logger.info(f"Retrying in {delay} seconds...")
+                    time.sleep(delay)
+                else:
+                    raise e
 
     def split_data(self, raw_data):
         numbers = [int(x) for x in raw_data.strip().split()]
