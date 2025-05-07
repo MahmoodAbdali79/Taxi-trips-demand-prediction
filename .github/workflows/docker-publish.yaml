@@ -1,4 +1,4 @@
-name: Build and Push Docker image
+name: Build and Push Docker Image
 
 on:
   release:
@@ -15,7 +15,10 @@ jobs:
 
       # Step 2: Install Git
       - name: Install Git
-        run: sudo apt-get update && sudo apt-get install -y git
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git
+          git --version
 
       # Step 3: Set up Docker Buildx
       - name: Set up Docker Buildx
@@ -23,7 +26,7 @@ jobs:
 
       # Step 4: Log in to Docker Hub
       - name: Log in to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -34,8 +37,8 @@ jobs:
 
       # Step 6: Build and push the Docker image
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v4
         with:
           context: .
           push: true
-          tags: docker.io/mahmoodabdali79/tap40:${{ env.RELEASE_VERSION }}
+          tags: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/tap40:${{ env.RELEASE_VERSION }}
