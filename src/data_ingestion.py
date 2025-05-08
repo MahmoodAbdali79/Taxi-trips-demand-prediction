@@ -1,8 +1,11 @@
+import os
 import random
-import sys
 import time
 from pathlib import Path
-from urllib.request import Request, urlopen
+
+import pandas as pd
+import requests
+from tqdm import tqdm
 
 from src.logger import get_logger
 
@@ -16,7 +19,6 @@ class DataIngestion:
         self.object_name = self.data_ingestion_config["object_name"]
         self.storage_path = self.data_ingestion_config["storage_path"]
         self.extra_part = self.data_ingestion_config["extra_part"]
-        self.train_ratio = self.data_ingestion_config["train_ratio"]
 
         self.url = f"https://{self.storage_path}/{self.bucket_name}/{self.object_name}?{self.extra_part}"
 
@@ -25,17 +27,41 @@ class DataIngestion:
         self.raw_dir.mkdir(parents=True, exist_ok=True)
 
     def download_raw_data(self):
-        req = Request(self.url, headers={"User-Agent": "Mozilla/5.0"})
+        raw_data_file = f"{self.raw_dir}/{self.object_name}"
+
+        if os.path.exists(raw_data_file):
+            logger.info(f"File already exists at {raw_data_file}, skipping download.")
+            return raw_data_file
+
         retries = 3
         delay = 5
 
         for attempt in range(retries):
             try:
                 logger.info(f"Attempt {attempt + 1} to connect to {self.url}")
-                response = urlopen(req, timeout=100)
-                raw_data = response.read().decode("utf-8")
-                logger.info("Connection successful!")
-                return raw_data
+                with requests.get(
+                    self.url, headers={"User": "Mozilla/5.0"}, stream=True, timeout=100
+                ) as r:
+                    r.raise_for_status()
+                    total_size = int(r.headers.get("content-length", 0))
+                    block_size = 1024
+                    progress_bar = tqdm(total=total_size, unit="iB", unit_scale=True)
+
+                    with open(raw_data_file, "wb") as f:
+                        for data in r.iter_content(block_size):
+                            progress_bar.update(len(data))
+                            f.write(data)
+                    progress_bar.close()
+
+                    if total_size != 0 and progress_bar.n != total_size:
+                        logger.error(
+                            "ERROR: Downloaded file size does not match expected size."
+                        )
+                        raise Exception("Incomplete download")
+
+                logger.info("Download completed successfully!")
+                return raw_data_file
+
             except Exception as e:
                 logger.error(f"Error: {e}")
                 if attempt < retries - 1:
@@ -44,56 +70,14 @@ class DataIngestion:
                 else:
                     raise e
 
-    def split_data(self, raw_data):
-        numbers = [int(x) for x in raw_data.strip().split()]
-
-        total_period, n_cols, n_rows = numbers[:3]
-        data = numbers[3:]
-
-        logger.info(f"Data format: {total_period} periods, {n_cols}x{n_rows} grid")
-
-        test_data = []
-        train_val_data = []
-
-        for t in range(total_period):
-            offest = t * n_cols * n_rows
-            for row in range(n_rows):
-                for col in range(n_cols):
-                    demand = data[offest + row * n_cols + col]
-                    if demand == -1:
-                        test_data.append([t, row, col, demand])
-                    else:
-                        train_val_data.append([t, row, col, demand])
-
-        random.shuffle(train_val_data)
-        train_size = int(len(train_val_data) * self.train_ratio)
-
-        train_data = train_val_data[:train_size]
-        val_data = train_val_data[train_size:]
-
-        return train_data, val_data, test_data
-
-    def save_to_csv_files(self, train_data, val_data, test_data):
-
-        header = "time,row,col,demand\n"
-
-        data_file = [
-            ("train", train_data),
-            ("validation", val_data),
-            ("test", test_data),
-        ]
-
-        for name, data in data_file:
-            output_file = self.raw_dir / f"{name}.csv"
-            with open(output_file, "w") as f:
-                f.write(header)
-                for row in data:
-                    f.write(f"{row[0]},{row[1]},{row[2]},{row[3]}\n")
-                logger.info(f"Saved {name} data to {output_file}")
+    def save_to_csv_files(self, raw_data_file):
+        df = pd.read_parquet(raw_data_file)
+        raw_data_csv = f"{self.raw_dir}/{self.object_name.split('.')[0]}.csv"
+        df.to_csv(raw_data_csv, index=False)
+        logger.info(f"Raw data saved at {raw_data_csv}")
 
     def run(self):
         logger.info(f"Data ingestion started for f{self.url}")
-        raw_data = self.download_raw_data()
-        train_data, val_data, test_data = self.split_data(raw_data)
-        self.save_to_csv_files(train_data, val_data, test_data)
+        raw_data_file = self.download_raw_data()
+        self.save_to_csv_files(raw_data_file)
         logger.info("Data ingestion complated successfully")

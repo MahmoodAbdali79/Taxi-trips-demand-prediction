@@ -41,12 +41,15 @@ class ModelTraining:
 
     def train_model(self, model, train_data):
         self.model_output_dir
-        X_train, y_train = train_data.drop(columns=["demand"]), train_data["demand"]
+        X_train, y_train = (
+            train_data.drop(columns=["trip_count"]),
+            train_data["trip_count"],
+        )
         model.fit(X_train, y_train)
         return model
 
     def evaluation_model(self, model, val_data):
-        X_val, y_val = val_data.drop(columns=["demand"]), val_data["demand"]
+        X_val, y_val = val_data.drop(columns=["trip_count"]), val_data["trip_count"]
         y_pred = model.predict(X_val)
         y_pred = [round(x) for x in y_pred]
         self.rmse = root_mean_squared_error(y_val, y_pred)
@@ -60,11 +63,11 @@ class ModelTraining:
         logger.info(f"Model saved at {self.model_output_dir}")
 
     def run(self):
-        mlflow.set_experiment("tap40")
+        mlflow.set_experiment("Taxi_demand")
         with mlflow.start_run():
             logger.info("Training model started")
             logger.info("MLflow started")
-            mlflow.set_tag("model_type", "ranfon_forest")
+            mlflow.set_tag("model_type", "random_forest")
 
             train_data, val_data = self.load_data()
             mlflow.log_artifact(self.train_path, "datasets")

@@ -1,19 +1,17 @@
 data_ingestion:
-  bucket_name : "tap40"
-  object_name : "data.txt"
+  bucket_name : "trip-data"
+  object_name : "fhv_tripdata.parquet"
   storage_path : "s3.ir-thr-at1.arvanstorage.ir"
-  extra_part: "X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=254f0b27-805a-4da4-af26-d746c6a3a15e%2F20250506%2Fir-thr-at1%2Fs3%2Faws4_request&X-Amz-Date=20250506T221359Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&versionId=&X-Amz-Signature=542df14272fdc777ce75a5efa1de5f188abd2e3d43facea6ac730c73a29930e5"
-  train_ratio : 0.9
+  extra_part: "X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=254f0b27-805a-4da4-af26-d746c6a3a15e%2F20250508%2Fir-thr-at1%2Fs3%2Faws4_request&X-Amz-Date=20250508T113315Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&versionId=&X-Amz-Signature=950a6cde1e58cae93a72071ffd5e53295539aeeb6173234024c6115f774470d4"
   artfact_dir: artifacts
-
-
-
 
 data_processing:
   shift: 18
+  val_test_ratio: 0.3
+  test_ratio: 0.5
 
 traning_model:
-  n_estimators: 750
+  n_estimators: 500
   max_samples: 0.85
   n_jobs: -1
  

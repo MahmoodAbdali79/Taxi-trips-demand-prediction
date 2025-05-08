@@ -11,8 +11,8 @@ config = read_config("config/config.yaml")
 data_ingestion = DataIngestion(config)
 data_ingestion.run()
 
-# data_precessing = DataProcessing(config)
-# data_precessing.run()
+data_precessing = DataProcessing(config)
+data_precessing.run()
 
-# model_training = ModelTraining(config)
-# model_training.run()
+model_training = ModelTraining(config)
+model_training.run()
