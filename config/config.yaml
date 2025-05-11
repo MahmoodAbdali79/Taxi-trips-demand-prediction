@@ -11,7 +11,7 @@ data_processing:
   test_ratio: 0.5
 
 traning_model:
-  n_estimators: 700
+  n_estimators: 300
   max_samples: 0.9
   n_jobs: -1
  

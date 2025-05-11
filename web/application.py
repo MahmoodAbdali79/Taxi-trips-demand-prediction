@@ -22,14 +22,15 @@ logger = get_logger(__name__)
 
 
 class DemandRequest(BaseModel):
-    hour_of_day: conint(ge=0, le=23)
-    day: conint(ge=0)
-    row: conint(ge=0, le=7)
-    col: conint(ge=0, le=7)
+    pickup_hour: conint(ge=0, le=23)
+    pickup_day: conint(ge=0, le=31)
+    pickup_weekday: conint(ge=0, le=6)
+    is_weekend: conint(le=1)
+    PUlocationID: conint(ge=1, le=265)
 
 
 class DemandResponse(BaseModel):
-    demand: int
+    trip_count: int
 
 
 @app.post("/predict", response_model=DemandResponse)
@@ -38,16 +39,17 @@ def predict_demand(request: DemandRequest):
     features = pd.DataFrame(
         [
             {
-                "hour_of_day": request.hour_of_day,
-                "day": request.day,
-                "row": request.row,
-                "col": request.col,
+                "pickup_day": request.pickup_day,
+                "pickup_hour": request.pickup_hour,
+                "pickup_weekday": request.pickup_weekday,
+                "is_weekend": request.is_weekend,
+                "PUlocationID": request.PUlocationID,
             }
         ]
     )
     prediction = model.predict(features)[0]
 
-    return {"demand": round(prediction)}
+    return {"trip_count": round(prediction)}
 
 
 if __name__ == "__main__":
@@ -56,5 +58,5 @@ if __name__ == "__main__":
         "web.application:app",
         host=os.environ.get("WEB_HOST", web_config["host"]),
         port=int(os.environ.get("WEB_PORT", web_config["port"])),
-        # reload=True
+        reload=True,
     )

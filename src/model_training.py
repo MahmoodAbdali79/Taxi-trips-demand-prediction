@@ -59,7 +59,7 @@ class ModelTraining:
 
     def save(self, model):
         self.model_output_path = self.model_output_dir / "rf.joblib"
-        joblib.dump(model, self.model_output_path, compress=("lzma", 3))
+        joblib.dump(model, self.model_output_path, compress=("lzma", 5))
         logger.info(f"Model saved at {self.model_output_dir}")
 
     def run(self):
