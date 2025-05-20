@@ -7,6 +7,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import root_mean_squared_error
 
 from src.logger import get_logger
+from src.model_factory import get_model
 
 logger = get_logger(__name__)
 
@@ -55,16 +56,20 @@ class ModelTraining:
         Returns:
             RandomForestRegressor: The initialized random forest model.
         """
-        n_estimators = self.model_training_config["n_estimators"]
-        max_samples = self.model_training_config["max_samples"]
-        n_jobs = self.model_training_config["n_jobs"]
-
-        model = RandomForestRegressor(
-            n_estimators=n_estimators,
-            max_samples=max_samples,
-            n_jobs=n_jobs,
-            oob_score=root_mean_squared_error,
+        model_name = self.model_training_config["selected_model"]
+        selected_model = next(
+            (
+                m
+                for m in self.model_training_config["models_to_run"]
+                if m["name"] == model_name
+            ),
+            None,
         )
+        if selected_model is None:
+            logger.error(f"Model '{model_name}' not found in config.yaml")
+            raise ValueError(f"Model '{model_name}' not found in config.yaml")
+        model = get_model(selected_model["name"], selected_model["params"])
+
         return model
 
     def train_model(self, model, train_data):
